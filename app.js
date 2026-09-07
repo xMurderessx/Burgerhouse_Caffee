@@ -26,12 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const icon = themeToggleBtn.querySelector('i');
-            if (document.body.classList.contains('dark-mode')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
+            if (icon) {
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
             }
         });
     }
@@ -88,15 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const cajonCarrito = document.getElementById('cart-drawer');
     const contenedorItems = document.getElementById('cart-items-container');
     const totalElemento = document.getElementById('cart-total');
+    const subtotalElemento = document.getElementById('cart-subtotal');
     const cartErrorMsg = document.getElementById('cart-error-msg');
 
     // Añadir directo desde la tarjeta
     document.querySelectorAll('.btn-add').forEach(boton => {
         boton.addEventListener('click', (e) => {
             const tarjeta = e.target.closest('.product-card');
-            const titulo = tarjeta.querySelector('h3').innerText;
-            const precioTexto = tarjeta.querySelector('.price').innerText.replace('Bs. ', '');
-            agregarAlCarrito(titulo, parseFloat(precioTexto), 1);
+            const titulo = tarjeta.querySelector('h3') ? tarjeta.querySelector('h3').innerText : 'Producto';
+            const precioTexto = tarjeta.querySelector('.price') ? tarjeta.querySelector('.price').innerText : '0';
+            
+            // Extrae solo números y decimales de forma segura
+            const precio = parseFloat(precioTexto.replace(/[^\d.]/g, '')) || 0; 
+            
+            agregarAlCarrito(titulo, precio, 1);
             showNotification(`¡${titulo} agregado al carrito!`);
         });
     });
@@ -113,16 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (badgeCarrito) badgeCarrito.innerText = totalItems;
 
         if (carrito.length === 0) {
-            contenedorItems.innerHTML = '<p class="cart__empty-msg">Tu carrito está vacío.</p>';
-            if(totalElemento) totalElemento.innerText = 'Bs. 0.00';
-            document.getElementById('cart-subtotal').innerText = 'Bs. 0.00';
+            if (contenedorItems) contenedorItems.innerHTML = '<p class="cart__empty-msg">Tu carrito está vacío.</p>';
+            if (totalElemento) totalElemento.innerText = 'Bs. 0.00';
+            if (subtotalElemento) subtotalElemento.innerText = 'Bs. 0.00';
             return;
         }
 
         // Si hay productos, ocultar mensaje de error si estaba visible
         if (cartErrorMsg) cartErrorMsg.classList.add('hidden');
 
-        contenedorItems.innerHTML = '';
+        if (contenedorItems) contenedorItems.innerHTML = '';
         let subtotal = 0;
 
         carrito.forEach((item, index) => {
@@ -142,11 +149,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" class="btn-eliminar" data-index="${index}" style="color:red; background:none; border:none; margin-left:auto; font-weight:bold; cursor:pointer;">×</button>
                 </div>
             `;
-            contenedorItems.appendChild(div);
+            if (contenedorItems) contenedorItems.appendChild(div);
         });
 
-        document.getElementById('cart-subtotal').innerText = `Bs. ${subtotal.toFixed(2)}`;
-        document.getElementById('cart-total').innerText = `Bs. ${(subtotal + 15).toFixed(2)}`;
+        if (subtotalElemento) subtotalElemento.innerText = `Bs. ${subtotal.toFixed(2)}`;
+        if (totalElemento) totalElemento.innerText = `Bs. ${(subtotal + 15).toFixed(2)}`;
         asignarEventosControles();
     }
 
@@ -169,7 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnToggleCarrito && cajonCarrito) {
         btnToggleCarrito.addEventListener('click', () => cajonCarrito.classList.add('open'));
-        document.querySelector('.cart-drawer__close').addEventListener('click', () => cajonCarrito.classList.remove('open'));
+        const closeCartBtn = document.querySelector('.cart-drawer__close');
+        if (closeCartBtn) {
+            closeCartBtn.addEventListener('click', () => cajonCarrito.classList.remove('open'));
+        }
     }
 
     // Checkout & Tracking con Validación de Carrito Vacío
@@ -181,29 +191,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
             if (carrito.length === 0) {
-                // Mostrar error en color rojo y notificación flotante roja
                 if (cartErrorMsg) cartErrorMsg.classList.remove('hidden');
                 showNotification('¡Error: El carrito está vacío!', true);
                 return;
             }
             if (cartErrorMsg) cartErrorMsg.classList.add('hidden');
-            cajonCarrito.classList.remove('open');
-            modalCheckout.showModal();
+            if (cajonCarrito) cajonCarrito.classList.remove('open');
+            if (modalCheckout) modalCheckout.showModal();
         });
     }
 
     const closeCheckout = document.getElementById('close-checkout');
     const closeTracking = document.getElementById('close-tracking');
-    if (closeCheckout) closeCheckout.addEventListener('click', () => modalCheckout.close());
-    if (closeTracking) closeTracking.addEventListener('click', () => modalTracking.close());
+    if (closeCheckout && modalCheckout) closeCheckout.addEventListener('click', () => modalCheckout.close());
+    if (closeTracking && modalTracking) closeTracking.addEventListener('click', () => modalTracking.close());
 
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            modalCheckout.close();
+            if (modalCheckout) modalCheckout.close();
             const randomCode = Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('track-code').innerText = `#${randomCode}`;
-            modalTracking.showModal();
+            
+            const trackCodeEl = document.getElementById('track-code');
+            if (trackCodeEl) trackCodeEl.innerText = `#${randomCode}`;
+            
+            if (modalTracking) modalTracking.showModal();
             showNotification('¡Compra exitosa! Gracias por tu pedido.');
             carrito = [];
             actualizarCarrito();
@@ -222,13 +234,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-info').forEach(boton => {
         boton.addEventListener('click', (e) => {
             const card = e.target.closest('.product-card');
-            currentProduct = card.querySelector('h3').innerText;
-            currentBasePrice = parseFloat(card.querySelector('.price').innerText.replace('Bs. ', ''));
+            currentProduct = card.querySelector('h3') ? card.querySelector('h3').innerText : 'Producto';
+            
+            const precioTexto = card.querySelector('.price') ? card.querySelector('.price').innerText : '0';
+            currentBasePrice = parseFloat(precioTexto.replace(/[^\d.]/g, '')) || 0;
             currentQty = 1;
 
-            document.getElementById('info-title').innerText = currentProduct;
-            document.getElementById('info-desc').innerText = card.getAttribute('data-desc') || '';
-            document.getElementById('info-cantidad').innerText = currentQty;
+            const infoTitleEl = document.getElementById('info-title');
+            const infoDescEl = document.getElementById('info-desc');
+            const infoCantEl = document.getElementById('info-cantidad');
+
+            if (infoTitleEl) infoTitleEl.innerText = currentProduct;
+            if (infoDescEl) infoDescEl.innerText = card.getAttribute('data-desc') || '';
+            if (infoCantEl) infoCantEl.innerText = currentQty;
 
             checkboxesExtras.forEach(cb => cb.checked = false);
             actualizarPrecioModalInfo();
@@ -246,7 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnSumarInfo) {
         btnSumarInfo.addEventListener('click', () => {
             currentQty++;
-            document.getElementById('info-cantidad').innerText = currentQty;
+            const infoCantEl = document.getElementById('info-cantidad');
+            if (infoCantEl) infoCantEl.innerText = currentQty;
             actualizarPrecioModalInfo();
         });
     }
@@ -255,7 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnRestarInfo.addEventListener('click', () => {
             if (currentQty > 1) {
                 currentQty--;
-                document.getElementById('info-cantidad').innerText = currentQty;
+                const infoCantEl = document.getElementById('info-cantidad');
+                if (infoCantEl) infoCantEl.innerText = currentQty;
                 actualizarPrecioModalInfo();
             }
         });
@@ -268,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarPrecioModalInfo() {
         let extrasTotal = 0;
         checkboxesExtras.forEach(cb => {
-            if (cb.checked) extrasTotal += parseFloat(cb.getAttribute('data-price'));
+            if (cb.checked) extrasTotal += parseFloat(cb.getAttribute('data-price') || 0);
         });
         const totalUnitario = currentBasePrice + extrasTotal;
         const totalFinal = totalUnitario * currentQty;
@@ -283,8 +303,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let extrasNombres = [];
             checkboxesExtras.forEach(cb => {
                 if (cb.checked) {
-                    extrasTotal += parseFloat(cb.getAttribute('data-price'));
-                    extrasNombres.push(cb.parentElement.innerText.trim().split('(')[0]);
+                    extrasTotal += parseFloat(cb.getAttribute('data-price') || 0);
+                    const labelText = cb.parentElement ? cb.parentElement.innerText.trim().split('(')[0].trim() : '';
+                    if (labelText) extrasNombres.push(labelText);
                 }
             });
 
@@ -312,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            loginModal.close();
+            if (loginModal) loginModal.close();
             showNotification('¡Sesión iniciada con éxito!');
             loginForm.reset();
         });
@@ -321,7 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroOrderBtn = document.getElementById('hero-order-btn');
     if (heroOrderBtn) {
         heroOrderBtn.addEventListener('click', () => {
-            document.getElementById('menu').scrollIntoView({ behavior: 'smooth' });
+            const menuSection = document.getElementById('menu');
+            if (menuSection) menuSection.scrollIntoView({ behavior: 'smooth' });
         });
     }
 });
