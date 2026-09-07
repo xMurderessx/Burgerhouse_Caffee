@@ -21,6 +21,7 @@
             cartCloseButton: document.querySelector('.cart-drawer__close'),
             cartItemsContainer: document.getElementById('cart-items-container'),
             cartSubtotal: document.getElementById('cart-subtotal'),
+            cartShipping: document.getElementById('cart-shipping'),
             cartTotal: document.getElementById('cart-total'),
             cartError: document.getElementById('cart-error-msg'),
             checkoutButton: document.getElementById('checkout-btn'),
@@ -173,6 +174,7 @@
             }, 0);
 
             if (elements.cartSubtotal) elements.cartSubtotal.textContent = formatPrice(subtotal);
+            if (elements.cartShipping) elements.cartShipping.textContent = formatPrice(SHIPPING_COST);
             if (elements.cartTotal) {
                 elements.cartTotal.textContent = formatPrice(cart.length > 0 ? subtotal + SHIPPING_COST : 0);
             }
@@ -195,32 +197,30 @@
             cart.forEach(function (item, index) {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'cart-item';
-                itemElement.style.cssText = 'margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border-color);';
 
                 const header = document.createElement('div');
-                header.style.cssText = 'display:flex; justify-content:space-between; gap:12px; margin-bottom:5px;';
+                header.className = 'cart-item__header';
 
                 const title = document.createElement('span');
-                title.style.cssText = 'font-weight:bold; font-size:0.9rem;';
+                title.className = 'cart-item__title';
                 title.textContent = item.title;
 
                 const itemTotal = document.createElement('span');
+                itemTotal.className = 'cart-item__total';
                 itemTotal.textContent = formatPrice(item.price * item.quantity);
 
                 const controls = document.createElement('div');
-                controls.style.cssText = 'display:flex; gap:10px; align-items:center;';
+                controls.className = 'cart-item__controls';
 
-                const decreaseButton = createCartButton('-', 'decrease', index, 'btn-restar btn btn--secondary');
-                decreaseButton.style.cssText = 'padding:2px 8px; cursor:pointer;';
+                const decreaseButton = createCartButton('-', 'decrease', index, 'btn-restar btn btn--secondary cart-item__control');
 
                 const quantity = document.createElement('span');
+                quantity.className = 'cart-item__quantity';
                 quantity.textContent = String(item.quantity);
 
-                const increaseButton = createCartButton('+', 'increase', index, 'btn-sumar btn btn--secondary');
-                increaseButton.style.cssText = 'padding:2px 8px; cursor:pointer;';
+                const increaseButton = createCartButton('+', 'increase', index, 'btn-sumar btn btn--secondary cart-item__control');
 
-                const removeButton = createCartButton('x', 'remove', index, 'btn-eliminar');
-                removeButton.style.cssText = 'color:red; background:none; border:none; margin-left:auto; font-weight:bold; cursor:pointer;';
+                const removeButton = createCartButton('x', 'remove', index, 'btn-eliminar cart-item__remove');
                 removeButton.setAttribute('aria-label', `Eliminar ${item.title}`);
 
                 header.append(title, itemTotal);
