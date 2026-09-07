@@ -1,0 +1,14 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "editor-browser",
+            "request": "launch",
+            "name": "Open index.html",
+            "url": "file:///c%3A/Users/VaditSabrina/Desktop/%E2%9A%9DMurderess%E2%9A%9D/CODES/Tendencia%20web/Burgerhaus%20%26%20Caf%C3%A9/index.html"
+        }
+    ]
+}
