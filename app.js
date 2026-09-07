@@ -104,10 +104,11 @@
 
             const titleElement = card.querySelector('h3');
             const priceElement = card.querySelector('.price');
+            const rawPrice = card.getAttribute('data-price') || (priceElement ? priceElement.textContent : '');
 
             return {
                 title: titleElement && titleElement.textContent ? titleElement.textContent.trim() : 'Producto',
-                price: parsePrice(priceElement ? priceElement.textContent : ''),
+                price: parsePrice(rawPrice),
                 description: card.getAttribute('data-desc') || ''
             };
         }
